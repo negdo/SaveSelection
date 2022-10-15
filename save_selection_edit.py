@@ -14,14 +14,13 @@ class SaveSelectionEdit(bpy.types.Operator):
         bpy.ops.ed.undo_push()
         bpy.ops.object.editmode_toggle()
 
-         # get next number
+        # get next number
         if bpy.context.scene.get('saveCounter') == None:
             bpy.context.scene['saveCounter'] = 1
             n = 1
         else:
             bpy.context.scene['saveCounter'] += 1
             n = bpy.context.scene['saveCounter']
-        
         
 
         # check select mode (faces/edges/vertices)

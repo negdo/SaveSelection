@@ -22,7 +22,7 @@ bl_info = {
     "name": "Save Selection",
     "description": "Save and restore selection of objects/vertices/edges/faces",
     "author": "Miha Marinko",
-    "version": (0, 5, 0),
+    "version": (0, 6, 1),
     "blender": (2, 80, 0),
     "location": "View3D",
     "warning": "",
@@ -35,6 +35,7 @@ import sys
 from .save_selection_object import *
 from .save_selection_edit import *
 from .draw import *
+from .preferences import *
 import bpy
 
 if "bpy" in locals():
@@ -44,14 +45,19 @@ if "bpy" in locals():
     except: from . import save_selection_object
     try: importlib.reload(draw)
     except: from . import draw
+    try: importlib.reload(preferences)
+    except: from . import preferences
 else:
     from . import save_selection_edit
     from . import save_selection_object
     from . import draw
+    from . import preferences
 
 
 def register():
     print("Registering SaveSelection")
+    bpy.utils.register_class(addCubeSamplePreferences)
+
     bpy.utils.register_class(SaveSelection)
     bpy.utils.register_class(RestoreSelected)
     bpy.utils.register_class(SaveSelectionEdit)
@@ -67,3 +73,5 @@ def unregister():
     bpy.utils.unregister_class(RestoreSelected)
     bpy.utils.unregister_class(SaveSelectionEdit)
     bpy.utils.unregister_class(RestoreSelectedEdit)
+
+    bpy.utils.unregister_class(addCubeSamplePreferences)
