@@ -22,7 +22,7 @@ bl_info = {
     "name": "Save Selection",
     "description": "Save and restore selection of objects/vertices/edges/faces",
     "author": "Miha Marinko",
-    "version": (0, 7, 0),
+    "version": (0, 7, 2),
     "blender": (2, 80, 0),
     "location": "View3D",
     "warning": "",
@@ -55,23 +55,33 @@ else:
 
 
 def register():
-    print("Registering SaveSelection")
-    bpy.utils.register_class(addCubeSamplePreferences)
+    bpy.utils.register_class(Preferences)
+    bpy.utils.register_class(ApplyPreferences)
 
-    bpy.utils.register_class(SaveSelection)
-    bpy.utils.register_class(RestoreSelected)
-    bpy.utils.register_class(SaveSelectionEdit)
-    bpy.utils.register_class(RestoreSelectedEdit)
-    bpy.types.VIEW3D_MT_object_context_menu.append(draw_save_selected_menu)
-    bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(draw_save_selected_edit_menu)
+    preferences = bpy.context.preferences.addons[__name__].preferences
+
+    if preferences.object_enable:
+        bpy.utils.register_class(SaveSelection)
+        bpy.utils.register_class(RestoreSelected)
+        bpy.types.VIEW3D_MT_object_context_menu.append(draw_save_selected_menu)
+    if preferences.edit_enable:
+        bpy.utils.register_class(SaveSelectionEdit)
+        bpy.utils.register_class(RestoreSelectedEdit)
+        bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(draw_save_selected_edit_menu)
+    
     print("SaveSelection registered")
 
 def unregister():
-    bpy.types.VIEW3D_MT_object_context_menu.remove(draw_save_selected_menu)
-    bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(draw_save_selected_edit_menu)
-    bpy.utils.unregister_class(SaveSelection)
-    bpy.utils.unregister_class(RestoreSelected)
-    bpy.utils.unregister_class(SaveSelectionEdit)
-    bpy.utils.unregister_class(RestoreSelectedEdit)
+    try:
+        bpy.types.VIEW3D_MT_object_context_menu.remove(draw_save_selected_menu)
+        bpy.utils.unregister_class(RestoreSelected)
+        bpy.utils.unregister_class(SaveSelection)
+    except: pass
+    try:
+        bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(draw_save_selected_edit_menu)
+        bpy.utils.unregister_class(SaveSelectionEdit)
+        bpy.utils.unregister_class(RestoreSelectedEdit)
+    except: pass
 
-    bpy.utils.unregister_class(addCubeSamplePreferences)
+    bpy.utils.unregister_class(Preferences)
+    bpy.utils.unregister_class(ApplyPreferences)
