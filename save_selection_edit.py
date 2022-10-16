@@ -130,19 +130,34 @@ class RestoreSelectedEdit(bpy.types.Operator):
             bpy.ops.mesh.select_all(action='DESELECT')
 
             if select_mode == 0:
-                self.vertices(context, n)
+                found_selection = self.vertices(context, n)
             elif select_mode == 1:
-                self.edges(context, n)
+                found_selection = self.edges(context, n)
             elif select_mode == 2:
-                self.faces(context, n)
-
+                found_selection = self.faces(context, n)
+            
             bpy.ops.object.editmode_toggle()
+
+            if not found_selection:
+                if select_mode == 0:
+                    n = self.find_biggest_vertex_layer()
+                    self.vertices(context, n)
+                elif select_mode == 1:
+                    n = self.find_biggest_edge_layer()
+                    self.edges(context, n)
+                elif select_mode == 2:
+                    n = self.find_biggest_face_layer()
+                    self.faces(context, n)
+
+                bpy.ops.object.editmode_toggle()
 
         return {"FINISHED"}
 
     def vertices(self, context, n):
         bpy.ops.mesh.select_mode(type="VERT")
         bpy.ops.object.editmode_toggle()
+
+        found_selection = False
 
         # For each selected object
         selection = bpy.context.selected_objects
@@ -158,13 +173,18 @@ class RestoreSelectedEdit(bpy.types.Operator):
             if layer != None:
                 for i in range(len(obj.data.vertices)):
                     # if number in vertex is equal to saveCounter
-                    obj.data.vertices[i].select = (bm.verts[i][layer] == n)
+                    value = (bm.verts[i][layer] == n)
+                    obj.data.vertices[i].select = value
+                    found_selection = found_selection or value
 
             bm.free()  # free and prevent further access
+        return found_selection
 
     def edges(self, context, n):
         bpy.ops.mesh.select_mode(type="EDGE")
         bpy.ops.object.editmode_toggle()
+
+        found_selection = False
 
         # For each selected object
         selection = bpy.context.selected_objects
@@ -180,13 +200,18 @@ class RestoreSelectedEdit(bpy.types.Operator):
             if layer != None:
                 for i in range(len(obj.data.edges)):
                     # if number in edges is equal to saveCounter
-                    obj.data.edges[i].select = (bm.edges[i][layer] == n)
+                    value = (bm.edges[i][layer] == n)
+                    obj.data.edges[i].select = value
+                    found_selection = found_selection or value
 
             bm.free()  # free and prevent further access
+        return found_selection
 
     def faces(self, context, n):
         bpy.ops.mesh.select_mode(type="FACE")
         bpy.ops.object.editmode_toggle()
+
+        found_selection = False
 
         # For each selected object
         selection = bpy.context.selected_objects
@@ -202,6 +227,73 @@ class RestoreSelectedEdit(bpy.types.Operator):
             if layer != None:
                 for i in range(len(obj.data.polygons)):
                     # if number in edges is equal to saveCounter
-                    obj.data.polygons[i].select = (bm.faces[i][layer] == n)
+                    value = (bm.faces[i][layer] == n)
+                    obj.data.polygons[i].select = value
+                    found_selection = found_selection or value
 
             bm.free()  # free and prevent further access
+        return found_selection
+
+
+    def find_biggest_vertex_layer(self):
+        biggest_layer = -1
+
+        # For each selected object
+        selection = bpy.context.selected_objects
+        for obj in selection:    
+
+            #BMESH of active object
+            bm = bmesh.new() 
+            bm.from_mesh(obj.data)
+            bm.verts.ensure_lookup_table()
+
+            # Get data from layer
+            layer = bm.verts.layers.int.get("savedSelectionCounter")
+            if layer != None:
+                for i in range(len(obj.data.vertices)):
+                    biggest_layer = max(bm.verts[i][layer], biggest_layer)
+
+            bm.free()  # free and prevent further access
+        return biggest_layer
+
+    def find_biggest_edge_layer(self):
+        biggest_layer = -1
+
+        # For each selected object
+        selection = bpy.context.selected_objects
+        for obj in selection:    
+
+            #BMESH of active object
+            bm = bmesh.new() 
+            bm.from_mesh(obj.data)
+            bm.edges.ensure_lookup_table()
+
+            # Get data from layer
+            layer = bm.edges.layers.int.get("savedSelectionCounter")
+            if layer != None:
+                for i in range(len(obj.data.edges)):
+                    biggest_layer = max(bm.edges[i][layer], biggest_layer)
+
+            bm.free()  # free and prevent further access
+        return biggest_layer
+
+    def find_biggest_face_layer(self):
+        biggest_layer = -1
+
+        # For each selected object
+        selection = bpy.context.selected_objects
+        for obj in selection:    
+
+            #BMESH of active object
+            bm = bmesh.new() 
+            bm.from_mesh(obj.data)
+            bm.faces.ensure_lookup_table()
+
+            # Get data from layer
+            layer = bm.faces.layers.int.get("savedSelectionCounter")
+            if layer != None:
+                for i in range(len(obj.data.polygons)):
+                    biggest_layer = max(bm.faces[i][layer], biggest_layer)
+
+            bm.free()  # free and prevent further access
+        return biggest_layer
