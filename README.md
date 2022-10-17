@@ -1,5 +1,11 @@
-# SaveSelection
-SaveSelection is a Blender addon enabling user to save current selection of objects/faces/edges/vertices and restore it later.
+
+![cover4](https://user-images.githubusercontent.com/18052453/196221861-1db00556-eb1a-4ecf-803d-63ec1eb69756.png)
+
+# Save Selection
+
+
+
+**Save Selection** is a Blender addon enabling user to save current selection of objects/faces/edges/vertices and restore it later.
 
 ![ezgif com-gif-maker](https://user-images.githubusercontent.com/18052453/196117276-ccebd0ee-b38f-4fae-9ea2-0900402f12f8.gif)
 
