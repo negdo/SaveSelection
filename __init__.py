@@ -22,7 +22,7 @@ bl_info = {
     "name": "Save Selection",
     "description": "Save and restore selection of objects/vertices/edges/faces",
     "author": "Miha Marinko",
-    "version": (0, 7, 2),
+    "version": (0, 9, 0),
     "blender": (2, 80, 0),
     "location": "View3D",
     "warning": "",
@@ -36,7 +36,9 @@ from .save_selection_object import *
 from .save_selection_edit import *
 from .draw import *
 from .preferences import *
+from .properties import *
 import bpy
+
 
 if "bpy" in locals():
     try: importlib.reload(save_selection_edit)
@@ -47,11 +49,14 @@ if "bpy" in locals():
     except: from . import draw
     try: importlib.reload(preferences)
     except: from . import preferences
+    try: importlib.reload(properties)
+    except: from . import properties
 else:
     from . import save_selection_edit
     from . import save_selection_object
     from . import draw
     from . import preferences
+    from . import properties
 
 
 def register():
@@ -60,16 +65,22 @@ def register():
 
     preferences = bpy.context.preferences.addons[__name__].preferences
 
-    if preferences.object_enable:
-        bpy.utils.register_class(SaveSelection)
-        bpy.utils.register_class(RestoreSelected)
-        bpy.types.VIEW3D_MT_object_context_menu.append(draw_save_selected_menu)
-    if preferences.edit_enable:
-        bpy.utils.register_class(SaveSelectionEdit)
-        bpy.utils.register_class(RestoreSelectedEdit)
-        bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(draw_save_selected_edit_menu)
-    
-    print("SaveSelection registered")
+    # properties for storing selections
+    bpy.utils.register_class(SelectedObjects)
+    bpy.utils.register_class(SavedSelection)
+    bpy.types.Scene.saved_selections = bpy.props.CollectionProperty(type=SavedSelection)
+    bpy.types.Scene.save_selection_index = bpy.props.IntProperty(default=-1)
+    bpy.types.Scene.save_selection_index_max = bpy.props.IntProperty(default=-1)
+
+    # operators
+    bpy.utils.register_class(SaveSelection)
+    bpy.utils.register_class(RestoreSelected)
+    bpy.utils.register_class(SaveSelectionEdit)
+    bpy.utils.register_class(SaveSelectionPanel)
+    bpy.utils.register_class(WORLD_UL_my_list)
+    bpy.types.VIEW3D_MT_object_context_menu.append(draw_save_selected_menu)
+    bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(draw_save_selected_edit_menu)
+
 
 def unregister():
     try:
@@ -80,8 +91,10 @@ def unregister():
     try:
         bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(draw_save_selected_edit_menu)
         bpy.utils.unregister_class(SaveSelectionEdit)
-        bpy.utils.unregister_class(RestoreSelectedEdit)
+        bpy.utils.unregister_class(RestoreSelected)
     except: pass
 
     bpy.utils.unregister_class(Preferences)
     bpy.utils.unregister_class(ApplyPreferences)
+    bpy.utils.unregister_class(SaveSelectionPanel)
+    bpy.utils.unregister_class(WORLD_UL_my_list)
