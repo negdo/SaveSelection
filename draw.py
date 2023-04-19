@@ -1,12 +1,5 @@
 import bpy
 
-def draw_save_selected_edit_menu(self, context):
-    # add operator to context menu
-    layout = self.layout
-    layout.separator()
-    layout.operator("scene.save_selection_edit")
-    layout.operator("scene.restore_selection")
-
 def draw_save_selected_menu(self, cotext):
     # add operator to context menu
     layout = self.layout
@@ -17,10 +10,10 @@ def draw_save_selected_menu(self, cotext):
 
 class SaveSelectionPanel(bpy.types.Panel):
     bl_label = "Save Selection"
-    bl_idname = "WORD_PT_save_selection"
+    bl_idname = "SCENE_PT_save_selection"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "world"
+    bl_context = "scene"
     bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
@@ -28,11 +21,28 @@ class SaveSelectionPanel(bpy.types.Panel):
 
         # Draw the list of objects in the scene
         row = layout.row()
-        row.template_list("WORLD_UL_my_list", "", context.scene, "saved_selections", context.scene, "save_selection_index")
+
+        col = row.column()
+        #list
+        col.template_list("SCENE_UL_save_selection_list", "", context.scene, "saved_selections", context.scene, "save_selection_index")
+
+        # add and delete button
+        col = row.column()
+        col.operator("scene.save_selection", icon="ADD", text="")
+        col.operator("scene.delete_selection", icon="REMOVE", text="")
+        
+        # restore and edit buttons
+        if len(context.scene.saved_selections) > 0:
+            selection = context.scene.saved_selections[context.scene.save_selection_index]
+
+            if selection is not None:
+                # restore and edit buttons
+                row2 = layout.row()
+                row2.operator("scene.restore_selection", icon="FILE_TICK", text="Restore")
+                row2.operator("scene.edit_selection", icon="GREASEPENCIL", text="Edit")
 
 
-
-class WORLD_UL_my_list(bpy.types.UIList):
+class SCENE_UL_save_selection_list(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         # if selection mode is object
         if item.selection_type == "OBJECT":

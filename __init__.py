@@ -22,7 +22,7 @@ bl_info = {
     "name": "Save Selection",
     "description": "Save and restore selection of objects/vertices/edges/faces",
     "author": "Miha Marinko",
-    "version": (0, 9, 0),
+    "version": (2, 0, 0),
     "blender": (2, 80, 0),
     "location": "View3D",
     "warning": "",
@@ -32,39 +32,27 @@ bl_info = {
 
 import importlib
 import sys
-from .save_selection_object import *
-from .save_selection_edit import *
+from .save_selection import *
 from .draw import *
-from .preferences import *
 from .properties import *
 import bpy
 
 
 if "bpy" in locals():
-    try: importlib.reload(save_selection_edit)
-    except: from . import save_selection_edit
-    try: importlib.reload(save_selection_object)
-    except: from . import save_selection_object
+    try: importlib.reload(save_selection)
+    except: from . import save_selection
     try: importlib.reload(draw)
     except: from . import draw
-    try: importlib.reload(preferences)
-    except: from . import preferences
     try: importlib.reload(properties)
     except: from . import properties
 else:
-    from . import save_selection_edit
-    from . import save_selection_object
+    from . import save_selection
     from . import draw
     from . import preferences
     from . import properties
 
 
 def register():
-    bpy.utils.register_class(Preferences)
-    bpy.utils.register_class(ApplyPreferences)
-
-    preferences = bpy.context.preferences.addons[__name__].preferences
-
     # properties for storing selections
     bpy.utils.register_class(SelectedObjects)
     bpy.utils.register_class(SavedSelection)
@@ -75,11 +63,12 @@ def register():
     # operators
     bpy.utils.register_class(SaveSelection)
     bpy.utils.register_class(RestoreSelected)
-    bpy.utils.register_class(SaveSelectionEdit)
+    bpy.utils.register_class(DeleteSelection)
+    bpy.utils.register_class(EditSelection)
     bpy.utils.register_class(SaveSelectionPanel)
-    bpy.utils.register_class(WORLD_UL_my_list)
+    bpy.utils.register_class(SCENE_UL_save_selection_list)
     bpy.types.VIEW3D_MT_object_context_menu.append(draw_save_selected_menu)
-    bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(draw_save_selected_edit_menu)
+    bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(draw_save_selected_menu)
 
 
 def unregister():
@@ -89,12 +78,11 @@ def unregister():
         bpy.utils.unregister_class(SaveSelection)
     except: pass
     try:
-        bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(draw_save_selected_edit_menu)
-        bpy.utils.unregister_class(SaveSelectionEdit)
+        bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(draw_save_selected_menu)
         bpy.utils.unregister_class(RestoreSelected)
     except: pass
 
-    bpy.utils.unregister_class(Preferences)
-    bpy.utils.unregister_class(ApplyPreferences)
     bpy.utils.unregister_class(SaveSelectionPanel)
-    bpy.utils.unregister_class(WORLD_UL_my_list)
+    bpy.utils.unregister_class(DeleteSelection)
+    bpy.utils.unregister_class(EditSelection)
+    bpy.utils.unregister_class(SCENE_UL_save_selection_list)
