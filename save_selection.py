@@ -164,10 +164,14 @@ class RestoreSelected(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.ed.undo_push()
-        if context.scene.save_selection_index == -1:
+        if context.scene.save_selection_list_index == -1:
+            return {"FINISHED"}
+        if len(context.scene.saved_selections) <= context.scene.save_selection_list_index:
+            return {"FINISHED"}
+        if context.scene.saved_selections[context.scene.save_selection_list_index] is None:
             return {"FINISHED"}
 
-        selection = context.scene.saved_selections[context.scene.save_selection_index]
+        selection = context.scene.saved_selections[context.scene.save_selection_list_index]
 
         try:
             bpy.ops.object.mode_set(mode="OBJECT")
@@ -195,15 +199,15 @@ class RestoreSelected(bpy.types.Operator):
             
             if selection.selection_type == "FACE":
                 bpy.ops.mesh.select_mode(type="FACE")
-                select_faces(context.scene.save_selection_index, selection.selected_objects)
+                select_faces(selection.selection_index, selection.selected_objects)
             
             elif selection.selection_type == "EDGE":
                 bpy.ops.mesh.select_mode(type="EDGE")
-                select_edges(context.scene.save_selection_index, selection.selected_objects)
+                select_edges(selection.selection_index, selection.selected_objects)
 
             elif selection.selection_type == "VERTEX":
                 bpy.ops.mesh.select_mode(type="VERT")
-                select_vertices(context.scene.save_selection_index, selection.selected_objects)
+                select_vertices(selection.selection_index, selection.selected_objects)
 
             bpy.ops.object.mode_set(mode="EDIT")
      
@@ -225,7 +229,8 @@ class SaveSelection(bpy.types.Operator):
         for obj in context.selected_objects:
             selection.selected_objects.add().obj = obj
 
-        context.scene.save_selection_index = index
+        # Select last in the list
+        context.scene.save_selection_list_index = len(context.scene.saved_selections) - 1
 
         if context.mode == "OBJECT":
             # object mode
@@ -238,13 +243,13 @@ class SaveSelection(bpy.types.Operator):
 
             if select_mode[0]:
                 selection.selection_type = "VERTEX"
-                mark_vertices(context, index)
+                mark_vertices(context, selection.selection_index)
             elif select_mode[1]:
                 selection.selection_type = "EDGE"
-                mark_edges(context, index)
+                mark_edges(context, selection.selection_index)
             elif select_mode[2]:
                 selection.selection_type = "FACE"
-                mark_faces(context, index)
+                mark_faces(context, selection.selection_index)
 
             bpy.ops.object.editmode_toggle()
         return {"FINISHED"}
@@ -258,16 +263,21 @@ class DeleteSelection(bpy.types.Operator):
     def execute(self, context):
         bpy.ops.ed.undo_push()
         
-        index = context.scene.save_selection_index
-        context.scene.saved_selections.remove(index)
+        # remove chosen selection
+        context.scene.saved_selections.remove(context.scene.save_selection_list_index)
+
+        # select last in the list
+        context.scene.save_selection_list_index = len(context.scene.saved_selections) - 1
 
         return {"FINISHED"}
     
     @classmethod
     def poll(self, context):
-        if context.scene.save_selection_index == -1:
+        if context.scene.save_selection_list_index == -1:
             return False
-        if context.scene.saved_selections[context.scene.save_selection_index] is None:
+        if len(context.scene.saved_selections) <= context.scene.save_selection_list_index:
+            return False
+        if context.scene.saved_selections[context.scene.save_selection_list_index] is None:
             return False
         return True
     
@@ -280,13 +290,12 @@ class EditSelection(bpy.types.Operator):
     def execute(self, context):
         bpy.ops.ed.undo_push()
 
-        index = context.scene.save_selection_index
-        selection = context.scene.saved_selections[index]
+        selection = context.scene.saved_selections[context.scene.save_selection_list_index]
         selection.selected_objects.clear()
         for obj in context.selected_objects:
             selection.selected_objects.add().obj = obj
 
-        context.scene.save_selection_index = index
+        selection.selection_index = get_selection_name(context)[1]
 
         if selection.selection_type == "OBJECT":
             # object mode
@@ -297,19 +306,20 @@ class EditSelection(bpy.types.Operator):
             bpy.ops.object.mode_set(mode="OBJECT")
 
             if selection.selection_type == "VERTEX":
-                mark_vertices(context, index)
+                mark_vertices(context, selection.selection_index)
             elif selection.selection_type == "EDGE":
-                mark_edges(context, index)
+                mark_edges(context, selection.selection_index)
             elif selection.selection_type == "FACE":
-                mark_faces(context, index)
+                mark_faces(context, selection.selection_index)
 
             bpy.ops.object.editmode_toggle()
 
         return {"FINISHED"}
     
     @classmethod
-    def poll(self, context):
-        selection = context.scene.saved_selections[context.scene.save_selection_index]
+    def poll(self, context):    
+        selection = context.scene.saved_selections[context.scene.save_selection_list_index]
+
         if selection.selection_type == "OBJECT":
             if context.mode != "OBJECT":
                 return False
