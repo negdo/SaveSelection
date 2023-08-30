@@ -24,7 +24,7 @@ class SaveSelectionPanel(bpy.types.Panel):
 
         col = row.column()
         #list
-        col.template_list("SCENE_UL_save_selection_list", "", context.scene, "saved_selections", context.scene, "save_selection_index")
+        col.template_list("SCENE_UL_save_selection_list", "", context.scene, "saved_selections", context.scene, "save_selection_list_index")
 
         # add and delete button
         col = row.column()
@@ -32,8 +32,9 @@ class SaveSelectionPanel(bpy.types.Panel):
         col.operator("scene.delete_selection", icon="REMOVE", text="")
         
         # restore and edit buttons
-        if len(context.scene.saved_selections) > 0:
-            selection = context.scene.saved_selections[context.scene.save_selection_index]
+        if len(context.scene.saved_selections) > context.scene.save_selection_list_index and len(context.scene.saved_selections) > 0:
+
+            selection = context.scene.saved_selections[context.scene.save_selection_list_index]
 
             if selection is not None:
                 # restore and edit buttons

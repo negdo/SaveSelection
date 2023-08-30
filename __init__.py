@@ -22,7 +22,7 @@ bl_info = {
     "name": "Save Selection",
     "description": "Save and restore selection of objects/vertices/edges/faces",
     "author": "Miha Marinko",
-    "version": (2, 0, 0),
+    "version": (2, 0, 1),
     "blender": (2, 80, 0),
     "location": "View3D",
     "warning": "",
@@ -57,7 +57,7 @@ def register():
     bpy.utils.register_class(SelectedObjects)
     bpy.utils.register_class(SavedSelection)
     bpy.types.Scene.saved_selections = bpy.props.CollectionProperty(type=SavedSelection)
-    bpy.types.Scene.save_selection_index = bpy.props.IntProperty(default=-1)
+    bpy.types.Scene.save_selection_list_index = bpy.props.IntProperty(default=-1)
     bpy.types.Scene.save_selection_index_max = bpy.props.IntProperty(default=-1)
 
     # operators
@@ -86,3 +86,4 @@ def unregister():
     bpy.utils.unregister_class(DeleteSelection)
     bpy.utils.unregister_class(EditSelection)
     bpy.utils.unregister_class(SCENE_UL_save_selection_list)
+    
