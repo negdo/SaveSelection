@@ -22,7 +22,7 @@ bl_info = {
     "name": "Save Selection",
     "description": "Save and restore selection of objects/vertices/edges/faces",
     "author": "Miha Marinko",
-    "version": (2, 0, 1),
+    "version": (2, 1, 0),
     "blender": (2, 80, 0),
     "location": "View3D",
     "warning": "",

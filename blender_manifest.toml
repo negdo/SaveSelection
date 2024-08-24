@@ -1,0 +1,16 @@
+schema_version = "1.0.0"
+
+id = "sound_nodes"
+version = "2.1.0"
+name = "Save Selection"
+tagline = "Save and restore selection of objects/vertices/edges/faces"
+maintainer = "Miha Marinko"
+type = "add-on"
+
+tags = ["Save", "Geometry", "Selection"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-2.0-or-later",
+]
